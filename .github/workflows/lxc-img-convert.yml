@@ -42,7 +42,7 @@ jobs:
         # Loading nbd
         sudo modprobe nbd
         # Specify the image format explicitly as 'raw'
-        sudo qemu-nbd -c /dev/nbd0 -f raw ./workspace/system.img
+        sudo qemu-nbd -c /dev/nbd0 -f raw system.img
         # Mount the .img file
         sudo mkdir /mnt/img && mount /dev/${{ github.event.inputs.partition }} /mnt/img
         # Echo mount

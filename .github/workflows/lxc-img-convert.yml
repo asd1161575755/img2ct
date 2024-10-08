@@ -77,8 +77,22 @@ jobs:
         # Move the tar.gz to the workspace for GitHub Actions to access
         sudo mv "/var/lib/lxc/${{ github.event.inputs.tar_name }}.tar.gz" $GITHUB_WORKSPACE
 
-    - name: Upload LXC template artifact
+    - name: Change ownership or permissions
+      run: |
+        # Change ownership to the current user
+        sudo chown $USER:$USER /var/lib/lxc/${{ github.event.inputs.tar_name }}.tar.gz
+        
+        # Alternatively, make it readable to all users
+        sudo chmod 644 /var/lib/lxc/${{ github.event.inputs.tar_name }}.tar.gz
+
+    - name: Move LXC template to workspace
+      run: |
+        sudo mv /var/lib/lxc/${{ github.event.inputs.tar_name }}.tar.gz $GITHUB_WORKSPACE/
+
+    - name: Upload LXC template as artifact
       uses: actions/upload-artifact@v3
       with:
         name: ${{ github.event.inputs.tar_name }}
-        path: /var/lib/lxc/${{ github.event.inputs.tar_name }}.tar.gz
+        path: $GITHUB_WORKSPACE/${{ github.event.inputs.tar_name }}.tar.gz
+        if-no-files-found: warn
+        include-hidden-files: false

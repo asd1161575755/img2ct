@@ -30,7 +30,7 @@ jobs:
         # Download the .img file from the input URL
         wget "${{ github.event.inputs.img_url }}" -O system.img.gz
         # Extract the. gz file to obtain the. img file
-        zcat system.img.gz > system.img
+        zcat system.img.gz > system.img || true
 
 
     - name: Convert .img to LXC template

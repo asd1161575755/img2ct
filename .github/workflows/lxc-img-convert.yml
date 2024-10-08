@@ -1,0 +1,77 @@
+name: Convert IMG to LXC Template
+
+on:
+  workflow_dispatch:
+    inputs:
+      img_url:
+        description: 'IMG下载地址'
+        required: true
+      tar_name:
+        description: 'CT模版文件名称'
+        required: true
+
+jobs:
+  convert:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout the repository
+      uses: actions/checkout@v3
+
+    - name: Install required packages
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y qemu-utils lxc rsync tar
+
+    - name: Download the .img file
+      run: |
+        # Set up the working directory
+        mkdir -p ./workspace
+        cd ./workspace
+
+        # Download the .img file from the input URL
+        wget "${{ github.event.inputs.img_url }}" -O system.img
+
+    - name: Convert .img to LXC template
+      run: |
+        # Mount the .img file
+        sudo mkdir /mnt/img
+        sudo modprobe nbd max_part=8
+        sudo qemu-nbd --connect=/dev/nbd0 ./workspace/system.img
+        sudo partprobe /dev/nbd0
+
+        # Mount the partition (assume it's the first partition)
+        sudo mount /dev/nbd0p1 /mnt/img
+
+        # Create LXC container rootfs directory
+        sudo mkdir -p /var/lib/lxc/my-container/rootfs
+
+        # Copy the image content into the LXC container rootfs
+        sudo rsync -a /mnt/img/ /var/lib/lxc/my-container/rootfs/
+
+        # Create basic LXC config file
+        sudo tee /var/lib/lxc/my-container/config <<EOL
+                lxc.uts.name = ${{ github.event.inputs.tar_name }}
+                lxc.rootfs.path = dir:/var/lib/lxc/${{ github.event.inputs.tar_name }}/rootfs
+                lxc.tty.max = 4 
+                lxc.autodev = 1
+                lxc.pty.max = 1024
+                lxc.start.auto = 0
+                lxc.network.type = empty
+                lxc.mount.auto = proc:rw sys:rw
+                EOL
+
+    - name: Pack the LXC template into a tar.gz
+      run: |
+        # Pack the LXC container into a tar.gz file
+        cd /var/lib/lxc/
+        sudo tar -czvf "${{ github.event.inputs.tar_name }}.tar.gz" my-container/
+
+        # Move the tar.gz to the workspace for GitHub Actions to access
+        sudo mv "${{ github.event.inputs.tar_name }}.tar.gz" $GITHUB_WORKSPACE
+
+    - name: Upload LXC template artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: lxc-template
+        path: "${{ github.event.inputs.tar_name }}.tar.gz"

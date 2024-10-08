@@ -1,4 +1,4 @@
-name: Convert IMG to LXC Template
+name: Convert IMG to LXC Template （pve）
 
 on:
   workflow_dispatch:
@@ -52,12 +52,10 @@ jobs:
         # Create basic LXC config file
         sudo tee /var/lib/lxc/my-container/config <<EOL
                 lxc.uts.name = ${{ github.event.inputs.tar_name }}
-                lxc.rootfs.path = dir:/var/lib/lxc/${{ github.event.inputs.tar_name }}/rootfs
                 lxc.tty.max = 4 
                 lxc.autodev = 1
                 lxc.pty.max = 1024
                 lxc.start.auto = 0
-                lxc.network.type = empty
                 lxc.mount.auto = proc:rw sys:rw
                 EOL
 

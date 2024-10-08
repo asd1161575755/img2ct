@@ -63,16 +63,14 @@ jobs:
                 lxc.start.auto = 0
                 lxc.init.cmd = /sbin/init
                 lxc.mount.auto = proc:rw sys:rw
-                lxc.rootfs.path = dir:container/rootfs
                 lxc.uts.name = ${{ github.event.inputs.tar_name }}
+                lxc.rootfs.path = dir:/var/lib/lxc/container/rootfs
         EOL
         
     - name: Pack the LXC template into a tar.gz
       run: |
         # Pack the LXC container into a tar.gz file without cd
-        sudo tar -czvf /var/lib/lxc/${{ github.event.inputs.tar_name }}.tar.gz -C /var/lib/lxc container/
-        # Move the tar.gz to the workspace for GitHub Actions to access
-        sudo mv /var/lib/lxc/${{ github.event.inputs.tar_name }}.tar.gz $GITHUB_WORKSPACE
+        cd /var/lib/lxc/container && sudo tar -czvf $GITHUB_WORKSPACE/${{ github.event.inputs.tar_name }}.tar.gz *
     
     - name: Upload LXC template as artifact
       uses: actions/upload-artifact@v3

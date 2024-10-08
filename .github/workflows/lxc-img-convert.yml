@@ -65,6 +65,10 @@ jobs:
         lxc.rootfs.path = dir:/var/lib/lxc/container/rootfs
         EOL
 
+        # Pack CT Template the .tar.gz file
+        sudo tar -czvf /var/lib/lxc/${{ github.event.inputs.tar_name }}.tar.gz -C /var/lib/lxc/container/*
+        sudo mv /var/lib/lxc/${{ github.event.inputs.tar_name }}.tar.gz $GITHUB_WORKSPACE
+        
     - name: Upload LXC template as artifact
       uses: actions/upload-artifact@v3
       with:

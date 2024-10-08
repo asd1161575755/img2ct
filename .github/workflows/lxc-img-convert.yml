@@ -30,7 +30,7 @@ jobs:
         # Download the .img file from the input URL
         wget "${{ github.event.inputs.img_url }}" -O system.img.gz
         # Extract the. gz file to obtain the. img file
-        gunzip system.img.gz
+        zcat system.img.gz > system.img
 
 
     - name: Convert .img to LXC template
@@ -38,7 +38,7 @@ jobs:
         # Mount the .img file
         sudo mkdir /mnt/img
         sudo modprobe nbd max_part=8
-        sudo qemu-nbd --connect=/dev/nbd0 ./workspace/*.img
+        sudo qemu-nbd --connect=/dev/nbd0 ./workspace/system.img
         sudo partprobe /dev/nbd0
 
         # Mount the partition (assume it's the first partition)

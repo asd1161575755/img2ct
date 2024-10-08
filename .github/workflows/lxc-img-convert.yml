@@ -70,7 +70,7 @@ jobs:
     - name: Pack the LXC template into a tar.gz
       run: |
         # Pack the LXC container into a tar.gz file without cd
-        cd /var/lib/lxc/container && sudo tar -czvf $GITHUB_WORKSPACE/${{ github.event.inputs.tar_name }}.tar.gz *
+        sudo tar -czvf $GITHUB_WORKSPACE/${{ github.event.inputs.tar_name }}.tar.gz -C /var/lib/lxc container/
     
     - name: Upload LXC template as artifact
       uses: actions/upload-artifact@v3

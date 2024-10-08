@@ -9,6 +9,9 @@ on:
       tar_name:
         description: 'CT模版文件名称'
         required: true
+      partition:
+        description: '需挂载的分区'
+        required: true
 
 jobs:
   convert:
@@ -42,7 +45,7 @@ jobs:
         sudo partprobe /dev/nbd0
         
         # Mount the partition (assume it's the first partition)
-        sudo mount /dev/nbd0p1 /mnt/img
+        sudo mount /dev/${{ github.event.inputs.partition }} /mnt/img
         
         # Create LXC container rootfs directory
         sudo mkdir -p /var/lib/lxc/container/rootfs
@@ -62,34 +65,8 @@ jobs:
         lxc.rootfs.path = dir:/var/lib/lxc/container/rootfs
         EOL
 
-        # Unmount and clean up
-        sudo umount /mnt/img
-        sudo qemu-nbd --disconnect /dev/nbd0
-        sudo rmdir /mnt/img
-
-    - name: Pack the LXC template into a tar.gz
-      run: |
-        # Pack the LXC container into a tar.gz file without cd
-        sudo tar -czvf /var/lib/lxc/${{ github.event.inputs.tar_name }}.tar.gz -C /var/lib/lxc container
-        # Move the tar.gz to the workspace for GitHub Actions to access
-        sudo mv /var/lib/lxc/${{ github.event.inputs.tar_name }}.tar.gz $GITHUB_WORKSPACE
-
-    - name: Change ownership or permissions
-      run: |
-        # Change ownership to the current user
-        sudo chown $USER:$USER /var/lib/lxc/${{ github.event.inputs.tar_name }}.tar.gz
-        
-        # Alternatively, make it readable to all users
-        sudo chmod 644 /var/lib/lxc/${{ github.event.inputs.tar_name }}.tar.gz
-
-    - name: Move LXC template to workspace
-      run: |
-        sudo mv /var/lib/lxc/${{ github.event.inputs.tar_name }}.tar.gz $GITHUB_WORKSPACE/
-
     - name: Upload LXC template as artifact
       uses: actions/upload-artifact@v3
       with:
         name: ${{ github.event.inputs.tar_name }}
-        path: $GITHUB_WORKSPACE/${{ github.event.inputs.tar_name }}.tar.gz
-        if-no-files-found: warn
-        include-hidden-files: false
+        path: ${{ github.event.inputs.tar_name }}.tar.gz

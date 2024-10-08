@@ -51,7 +51,7 @@ jobs:
         echo "ls"
         sudo ls -lh /mnt/img
         # Pack CT Template the .tar.gz file
-        sudo tar -czvf $GITHUB_WORKSPACE/${{ github.event.inputs.tar_name }}.tar.gz -C /mnt/img/*
+        sudo tar -czvf $GITHUB_WORKSPACE/${{ github.event.inputs.tar_name }}.tar.gz -C /mnt/img/ .
         # Echo .tar.gz file
         sudo ls -lh $GITHUB_WORKSPACE/${{ github.event.inputs.tar_name }}.tar.gz
         

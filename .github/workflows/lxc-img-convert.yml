@@ -25,26 +25,39 @@ jobs:
 
     - name: Download the .img file
       run: |
-        # Set up the working directory
         mkdir -p ./workspace && cd ./workspace
-        # Download the .img file from the input URL
         wget "${{ github.event.inputs.img_url }}" -O system.img.gz
-        # Extract the. gz file to obtain the. img file
+        # Ensure the download succeeded
+        if [ ! -f system.img.gz ]; then
+          echo "Download failed!"
+          exit 1
+        fi
+        # Extract the .img.gz to .img
         zcat system.img.gz > system.img || true
-
+        if [ ! -f system.img ]; then
+          echo "Extraction of .img failed!"
+          exit 1
+        fi
 
     - name: Convert .img to LXC template
       run: |
         # Mount the .img file
         sudo mkdir /mnt/img
         sudo modprobe nbd max_part=8
-        # Specify the image format explicitly as 'raw'
         sudo qemu-nbd -f raw --connect=/dev/nbd0 ./workspace/system.img
         sudo partprobe /dev/nbd0
         
-        # Mount the partition (assume it's the first partition)
-        sudo mount /dev/nbd0p1 /mnt/img
+        # Automatically detect the root partition (ext4 file system)
+        ROOT_PART=$(lsblk -o NAME,FSTYPE,SIZE,LABEL,MOUNTPOINT | grep 'ext4' | awk '{print $1}' | head -n 1)
+        if [ -z "$ROOT_PART" ]; then
+          echo "No ext4 partition found in the image!"
+          sudo qemu-nbd --disconnect /dev/nbd0
+          exit 1
+        fi
         
+        # Mount the detected partition
+        sudo mount /dev/$ROOT_PART /mnt/img
+
         # Create LXC container rootfs directory
         sudo mkdir -p /var/lib/lxc/container/rootfs
         
@@ -54,7 +67,7 @@ jobs:
         # Create basic LXC config file
         sudo tee /var/lib/lxc/container/config <<EOL
                 lxc.uts.name = ${{ github.event.inputs.tar_name }}
-                lxc.tty.max = 4 
+                lxc.tty.max = 4
                 lxc.autodev = 1
                 lxc.pty.max = 1024
                 lxc.start.auto = 0
@@ -63,10 +76,15 @@ jobs:
 
     - name: Pack the LXC template into a tar.gz
       run: |
-        # Pack the LXC container into a tar.gz file without cd
         sudo tar -czvf "/var/lib/lxc/${{ github.event.inputs.tar_name }}.tar.gz" -C /var/lib/lxc container/
-        # Move the tar.gz to the workspace for GitHub Actions to access
         sudo mv "/var/lib/lxc/${{ github.event.inputs.tar_name }}.tar.gz" $GITHUB_WORKSPACE
+
+    - name: Cleanup
+      run: |
+        # Unmount the mounted image and cleanup
+        sudo umount /mnt/img || echo "Unmount failed!"
+        sudo qemu-nbd --disconnect /dev/nbd0 || echo "Disconnect NBD failed!"
+        sudo rmdir /mnt/img || echo "Directory removal failed!"
 
     - name: Upload LXC template artifact
       uses: actions/upload-artifact@v3

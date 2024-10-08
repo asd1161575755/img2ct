@@ -38,20 +38,20 @@ jobs:
     - name: Convert .img to LXC template
       run: |
         # Enter working directory
-        cd workspace
+        sudo cd workspace
         # Loading nbd
-        modprobe nbd
+        sudo modprobe nbd
         # Specify the image format explicitly as 'raw'
-        qemu-nbd -c /dev/nbd0 -f raw ./workspace/system.img
+        sudo qemu-nbd -c /dev/nbd0 -f raw ./workspace/system.img
         # Mount the .img file
-        mkdir /mnt/img && mount /dev/${{ github.event.inputs.partition }} /mnt/img
+        sudo mkdir /mnt/img && mount /dev/${{ github.event.inputs.partition }} /mnt/img
         # Echo mount
-        lsblk -f /dev/nbd0
-        echo ls -lh /mnt/img
+        sudo lsblk -f /dev/nbd0
+        sudo ls -lh /mnt/img
         # Pack CT Template the .tar.gz file
-        tar -czvf $GITHUB_WORKSPACE/${{ github.event.inputs.tar_name }}.tar.gz -C /mnt/img/*
+        sudo tar -czvf $GITHUB_WORKSPACE/${{ github.event.inputs.tar_name }}.tar.gz -C /mnt/img/*
         # Echo .tar.gz file
-        ls -lh $GITHUB_WORKSPACE/${{ github.event.inputs.tar_name }}.tar.gz
+        sudo ls -lh $GITHUB_WORKSPACE/${{ github.event.inputs.tar_name }}.tar.gz
         
     - name: Upload LXC template as artifact
       uses: actions/upload-artifact@v3

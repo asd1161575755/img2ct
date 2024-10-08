@@ -24,7 +24,7 @@ jobs:
     - name: Install required packages
       run: |
         sudo apt-get update
-        sudo apt-get install -y qemu-utils lxc rsync tar
+        sudo apt-get install -y qemu-utils lxc tar gzip
 
     - name: Download the .img file
       run: |
@@ -38,7 +38,7 @@ jobs:
     - name: Convert .img to LXC template
       run: |
         # Enter working directory
-        sudo cd workspace
+        cd workspace
         # Loading nbd
         sudo modprobe nbd
         # Specify the image format explicitly as 'raw'

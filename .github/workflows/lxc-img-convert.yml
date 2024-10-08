@@ -60,14 +60,14 @@ jobs:
         sudo rsync -a /mnt/img/ /var/lib/lxc/${{ github.event.inputs.container_name }}/rootfs/
         # Create basic LXC config file
         sudo tee /var/lib/lxc/${{ github.event.inputs.container_name }}/config <<EOL
-                lxc.tty.max = 4 
-                lxc.autodev = 1
-                lxc.pty.max = 1024
-                lxc.start.auto = 0
-                lxc.init.cmd = /sbin/init
-                lxc.mount.auto = proc:rw sys:rw
-                lxc.uts.name = ${{ github.event.inputs.tar_name }}
-                lxc.rootfs.path = dir:/var/lib/lxc/${{ github.event.inputs.container_name }}/rootfs
+        lxc.tty.max = 4 
+        lxc.autodev = 1
+        lxc.pty.max = 1024
+        lxc.start.auto = 0
+        lxc.init.cmd = /sbin/init
+        lxc.mount.auto = proc:rw sys:rw
+        lxc.uts.name = ${{ github.event.inputs.tar_name }}
+        lxc.rootfs.path = dir:/var/lib/lxc/${{ github.event.inputs.container_name }}/rootfs
         EOL
         
     - name: Pack the LXC template into a tar.gz

@@ -46,7 +46,9 @@ jobs:
         # Mount the .img file
         sudo mkdir /mnt/img && sudo mount /dev/${{ github.event.inputs.partition }} /mnt/img
         # Echo mount
+        echo "lsblk"
         sudo lsblk -f /dev/nbd0
+        echo "ls"
         sudo ls -lh /mnt/img
         # Pack CT Template the .tar.gz file
         sudo tar -czvf $GITHUB_WORKSPACE/${{ github.event.inputs.tar_name }}.tar.gz -C /mnt/img/*

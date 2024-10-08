@@ -46,13 +46,13 @@ jobs:
         sudo mount /dev/nbd0p1 /mnt/img
         
         # Create LXC container rootfs directory
-        sudo mkdir -p /var/lib/lxc/my-container/rootfs
+        sudo mkdir -p /var/lib/lxc/container/rootfs
         
         # Copy the image content into the LXC container rootfs
-        sudo rsync -a /mnt/img/ /var/lib/lxc/my-container/rootfs/
+        sudo rsync -a /mnt/img/ /var/lib/lxc/container/rootfs/
         
         # Create basic LXC config file
-        sudo tee /var/lib/lxc/my-container/config <<EOL
+        sudo tee /var/lib/lxc/container/config <<EOL
                 lxc.uts.name = ${{ github.event.inputs.tar_name }}
                 lxc.tty.max = 4 
                 lxc.autodev = 1
@@ -64,7 +64,7 @@ jobs:
     - name: Pack the LXC template into a tar.gz
       run: |
         # Pack the LXC container into a tar.gz file without cd
-        sudo tar -czvf "/var/lib/lxc/${{ github.event.inputs.tar_name }}.tar.gz" -C /var/lib/lxc my-container/
+        sudo tar -czvf "/var/lib/lxc/${{ github.event.inputs.tar_name }}.tar.gz" -C /var/lib/lxc container/
         # Move the tar.gz to the workspace for GitHub Actions to access
         sudo mv "/var/lib/lxc/${{ github.event.inputs.tar_name }}.tar.gz" $GITHUB_WORKSPACE
 

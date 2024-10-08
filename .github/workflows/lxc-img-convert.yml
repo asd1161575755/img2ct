@@ -71,6 +71,7 @@ jobs:
                 lxc.autodev = 1
                 lxc.pty.max = 1024
                 lxc.start.auto = 0
+                lxc.init.cmd = /sbin/init
                 lxc.mount.auto = proc:rw sys:rw
         EOL
 

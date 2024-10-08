@@ -70,7 +70,7 @@ jobs:
     - name: Pack the LXC template into a tar.gz
       run: |
         # Pack the LXC container into a tar.gz file without cd
-        sudo tar -czvf /var/lib/lxc/${{ github.event.inputs.tar_name }}.tar.gz -C /var/lib/lxc container/*
+        sudo tar -czvf /var/lib/lxc/${{ github.event.inputs.tar_name }}.tar.gz -C /var/lib/lxc container
         # Move the tar.gz to the workspace for GitHub Actions to access
         sudo mv /var/lib/lxc/${{ github.event.inputs.tar_name }}.tar.gz $GITHUB_WORKSPACE
 

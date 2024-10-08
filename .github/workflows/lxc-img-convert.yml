@@ -9,6 +9,9 @@ on:
       tar_name:
         description: 'CT模版文件名称'
         required: true
+      container_name:
+        description: 'CT模版容器名称'
+        required: true
       partition:
         description: '需挂载的分区'
         required: true

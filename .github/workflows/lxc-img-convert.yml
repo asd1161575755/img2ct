@@ -38,18 +38,19 @@ jobs:
         # Mount the .img file
         sudo mkdir /mnt/img
         sudo modprobe nbd max_part=8
-        sudo qemu-nbd --connect=/dev/nbd0 ./workspace/system.img
+        # Specify the image format explicitly as 'raw'
+        sudo qemu-nbd -f raw --connect=/dev/nbd0 ./workspace/system.img
         sudo partprobe /dev/nbd0
-
+        
         # Mount the partition (assume it's the first partition)
         sudo mount /dev/nbd0p1 /mnt/img
-
+        
         # Create LXC container rootfs directory
         sudo mkdir -p /var/lib/lxc/my-container/rootfs
-
+        
         # Copy the image content into the LXC container rootfs
         sudo rsync -a /mnt/img/ /var/lib/lxc/my-container/rootfs/
-
+        
         # Create basic LXC config file
         sudo tee /var/lib/lxc/my-container/config <<EOL
                 lxc.uts.name = ${{ github.event.inputs.tar_name }}
@@ -58,7 +59,7 @@ jobs:
                 lxc.pty.max = 1024
                 lxc.start.auto = 0
                 lxc.mount.auto = proc:rw sys:rw
-                EOL
+        EOL
 
     - name: Pack the LXC template into a tar.gz
       run: |

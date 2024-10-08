@@ -63,8 +63,8 @@ jobs:
                 lxc.start.auto = 0
                 lxc.init.cmd = /sbin/init
                 lxc.mount.auto = proc:rw sys:rw
+                lxc.rootfs.path = dir:container/rootfs
                 lxc.uts.name = ${{ github.event.inputs.tar_name }}
-                lxc.rootfs.path = dir:/var/lib/lxc/container/rootfs
         EOL
         
     - name: Pack the LXC template into a tar.gz

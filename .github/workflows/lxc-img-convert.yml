@@ -52,14 +52,23 @@ jobs:
         
         # Create basic LXC config file
         sudo tee /var/lib/lxc/container/config <<EOL
-                lxc.uts.name = ${{ github.event.inputs.tar_name }}
-                lxc.tty.max = 4 
-                lxc.autodev = 1
-                lxc.pty.max = 1024
-                lxc.start.auto = 0
-                lxc.init.cmd = /sbin/init
-                lxc.mount.auto = proc:rw sys:rw
+        lxc.uts.name = ${{ github.event.inputs.tar_name }}
+        lxc.tty.max = 4
+        lxc.autodev = 1
+        lxc.pty.max = 1024
+        lxc.start.auto = 0
+        lxc.init.cmd = /sbin/init
+        lxc.mount.auto = proc:rw sys:rw
+        lxc.rootfs.path = dir:/var/lib/lxc/container/rootfs
         EOL
+
+        # Compress the rootfs folder into a tar.gz template
+        sudo tar -czvf /var/lib/lxc/${{ github.event.inputs.tar_name }}.tar.gz -C /var/lib/lxc/container/rootfs .
+
+        # Unmount and clean up
+        sudo umount /mnt/img
+        sudo qemu-nbd --disconnect /dev/nbd0
+        sudo rmdir /mnt/img
 
     - name: Pack the LXC template into a tar.gz
       run: |
@@ -72,4 +81,4 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: ${{ github.event.inputs.tar_name }}
-        path: "${{ github.event.inputs.tar_name }}.tar.gz"
+        path: /var/lib/lxc/${{ github.event.inputs.tar_name }}.tar.gz

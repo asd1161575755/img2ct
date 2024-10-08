@@ -71,5 +71,5 @@ jobs:
     - name: Upload LXC template artifact
       uses: actions/upload-artifact@v3
       with:
-        name: lxc-template
+        name: ${{ github.event.inputs.tar_name }}
         path: "${{ github.event.inputs.tar_name }}.tar.gz"

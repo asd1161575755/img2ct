@@ -1,4 +1,4 @@
-name: Convert IMG to LXC Template （pve）
+name: Convert IMG to LXC Template (pve)
 
 on:
   workflow_dispatch:

@@ -40,21 +40,39 @@ jobs:
         # Enter working directory
         cd workspace
         # Loading nbd
-        sudo modprobe nbd
+        sudo modprobe nbd max_part=8
         # Specify the image format explicitly as 'raw'
-        sudo qemu-nbd -c /dev/nbd0 -f raw system.img
+        sudo qemu-nbd -f raw --connect=/dev/nbd0 system.img
+        sudo partprobe /dev/nbd0
         # Mount the .img file
         sudo mkdir /mnt/img && sudo mount /dev/${{ github.event.inputs.partition }} /mnt/img
         # Echo mount
-        echo "lsblk"
+        echo "lsblk："
         sudo lsblk -f /dev/nbd0
-        echo "ls"
+        echo "ls："
         sudo ls -lh /mnt/img
-        # Pack CT Template the .tar.gz file
-        cd /mnt/img/ && sudo tar -czvf $GITHUB_WORKSPACE/${{ github.event.inputs.tar_name }}.tar.gz *
-        # Echo .tar.gz file
-        sudo ls -lh $GITHUB_WORKSPACE/${{ github.event.inputs.tar_name }}.tar.gz
+        # Create LXC container rootfs directory
+        sudo mkdir -p /var/lib/lxc/container/rootfs
+        # Copy the image content into the LXC container rootfs
+        sudo rsync -a /mnt/img/ /var/lib/lxc/container/rootfs/
+        # Create basic LXC config file
+        sudo tee /var/lib/lxc/container/config <<EOL
+                lxc.uts.name = ${{ github.event.inputs.tar_name }}
+                lxc.tty.max = 4 
+                lxc.autodev = 1
+                lxc.pty.max = 1024
+                lxc.start.auto = 0
+                lxc.init.cmd = /sbin/init
+                lxc.mount.auto = proc:rw sys:rw
+        EOL
         
+    - name: Pack the LXC template into a tar.gz
+      run: |
+        # Pack the LXC container into a tar.gz file without cd
+        sudo tar -czvf /var/lib/lxc/${{ github.event.inputs.tar_name }}.tar.gz -C /var/lib/lxc container/
+        # Move the tar.gz to the workspace for GitHub Actions to access
+        sudo mv /var/lib/lxc/${{ github.event.inputs.tar_name }}.tar.gz $GITHUB_WORKSPACE
+    
     - name: Upload LXC template as artifact
       uses: actions/upload-artifact@v3
       with:

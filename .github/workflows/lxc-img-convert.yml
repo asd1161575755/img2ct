@@ -26,18 +26,19 @@ jobs:
     - name: Download the .img file
       run: |
         # Set up the working directory
-        mkdir -p ./workspace
-        cd ./workspace
-
+        mkdir -p ./workspace && cd ./workspace
         # Download the .img file from the input URL
-        wget "${{ github.event.inputs.img_url }}" -O system.img
+        wget "${{ github.event.inputs.img_url }}" -O system.img.gz
+        # Extract the. gz file to obtain the. img file
+        gunzip system.img.gz
+
 
     - name: Convert .img to LXC template
       run: |
         # Mount the .img file
         sudo mkdir /mnt/img
         sudo modprobe nbd max_part=8
-        sudo qemu-nbd --connect=/dev/nbd0 ./workspace/system.img
+        sudo qemu-nbd --connect=/dev/nbd0 ./workspace/*.img
         sudo partprobe /dev/nbd0
 
         # Mount the partition (assume it's the first partition)

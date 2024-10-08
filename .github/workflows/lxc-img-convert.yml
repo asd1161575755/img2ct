@@ -44,7 +44,7 @@ jobs:
         # Specify the image format explicitly as 'raw'
         sudo qemu-nbd -c /dev/nbd0 -f raw system.img
         # Mount the .img file
-        sudo mkdir /mnt/img && mount /dev/${{ github.event.inputs.partition }} /mnt/img
+        sudo mkdir /mnt/img && sudo mount /dev/${{ github.event.inputs.partition }} /mnt/img
         # Echo mount
         sudo lsblk -f /dev/nbd0
         sudo ls -lh /mnt/img
